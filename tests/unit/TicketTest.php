@@ -1,13 +1,12 @@
 <?php
 
-use App\Concert;
-use App\Facades\TicketCode;
+namespace Tests\Unit;
+
 use App\Order;
 use App\Ticket;
-use Carbon\Carbon;
+use Tests\TestCase;
+use App\Facades\TicketCode;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 class TicketTest extends TestCase
 {
@@ -35,7 +34,7 @@ class TicketTest extends TestCase
         $this->assertNull($ticket->fresh()->reserved_at);
     }
 
-   /** @test */
+    /** @test */
     function a_ticket_can_be_claimed_for_an_order()
     {
         $order = factory(Order::class)->create();
@@ -46,5 +45,5 @@ class TicketTest extends TestCase
 
         $this->assertContains($ticket->id, $order->tickets->pluck('id'));
         $this->assertEquals('TICKETCODE1', $ticket->code);
-    }    
+    }
 }

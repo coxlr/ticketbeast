@@ -1,14 +1,14 @@
 <?php
 
-use App\Billing\Charge;
-use App\Concert;
+namespace Tests\Unit;
+
+use Mockery;
 use App\Order;
-use App\Reservation;
 use App\Ticket;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Tests\TestCase;
+use App\Billing\Charge;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class OrderTest extends TestCase
 {
@@ -23,7 +23,7 @@ class OrderTest extends TestCase
             Mockery::spy(Ticket::class),
             Mockery::spy(Ticket::class),
         ]);
-        
+
         $order = Order::forTickets($tickets, 'john@example.com', $charge);
 
         $this->assertEquals('john@example.com', $order->email);
@@ -36,7 +36,7 @@ class OrderTest extends TestCase
     function retrieving_an_order_by_confirmation_number()
     {
         $order = factory(Order::class)->create([
-            'confirmation_number' => 'ORDERCONFIRMATION1234'
+            'confirmation_number' => 'ORDERCONFIRMATION1234',
         ]);
 
         $foundOrder = Order::findByConfirmationNumber('ORDERCONFIRMATION1234');
@@ -52,7 +52,7 @@ class OrderTest extends TestCase
         } catch (ModelNotFoundException $e) {
             return;
         }
-        
+
         $this->fail('No matching order was found for the specified confirmation number, but an exception was not thrown.');
     }
 
@@ -63,8 +63,8 @@ class OrderTest extends TestCase
             'confirmation_number' => 'ORDERCONFIRMATION1234',
             'email' => 'jane@example.com',
             'amount' => 6000,
-         ]);
-         $order->tickets()->saveMany([
+        ]);
+        $order->tickets()->saveMany([
             factory(Ticket::class)->create(['code' => 'TICKETCODE1']),
             factory(Ticket::class)->create(['code' => 'TICKETCODE2']),
             factory(Ticket::class)->create(['code' => 'TICKETCODE3']),

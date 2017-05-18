@@ -1,13 +1,14 @@
 <?php
 
-use App\Concert;
-use App\Exceptions\NotEnoughTicketsException;
+namespace Tests\Unit;
+
 use App\Order;
 use App\Ticket;
+use App\Concert;
 use Carbon\Carbon;
+use Tests\TestCase;
+use App\Exceptions\NotEnoughTicketsException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 class ConcertTest extends TestCase
 {
@@ -85,7 +86,6 @@ class ConcertTest extends TestCase
         try {
             $reservation = $concert->reserveTickets(11, 'john@example.com');
         } catch (NotEnoughTicketsException $e) {
-            $this->assertFalse($concert->hasOrderFor('jane@example.com'));
             $this->assertEquals(10, $concert->ticketsRemaining());
             return;
         }

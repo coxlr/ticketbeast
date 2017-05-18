@@ -1,9 +1,9 @@
 <?php
 
+namespace Tests\Unit;
+
+use Tests\TestCase;
 use App\RandomOrderConfirmationNumberGenerator;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class RandomOrderConfirmationNumberGeneratorTest extends TestCase
 {
@@ -15,13 +15,13 @@ class RandomOrderConfirmationNumberGeneratorTest extends TestCase
     // ABCDEFGHJKLMNPQRSTUVWXYZ
     // 23456789
 
-	/** @test */
+    /** @test */
     function must_be_24_characters_long()
     {
         $generator = new RandomOrderConfirmationNumberGenerator;
 
         $confirmationNumber = $generator->generate();
-        
+
         $this->assertEquals(24, strlen($confirmationNumber));
     }
 
@@ -29,9 +29,9 @@ class RandomOrderConfirmationNumberGeneratorTest extends TestCase
     function can_only_contain_uppercase_letters_and_numbers()
     {
         $generator = new RandomOrderConfirmationNumberGenerator;
-        
+
         $confirmationNumber = $generator->generate();
-        
+
         $this->assertRegExp('/^[A-Z0-9]+$/', $confirmationNumber);
     }
 
@@ -39,14 +39,14 @@ class RandomOrderConfirmationNumberGeneratorTest extends TestCase
     function cannot_contain_ambiguous_characters()
     {
         $generator = new RandomOrderConfirmationNumberGenerator;
-        
+
         $confirmationNumber = $generator->generate();
-        
+
         $this->assertFalse(strpos($confirmationNumber, '1'));
         $this->assertFalse(strpos($confirmationNumber, 'I'));
         $this->assertFalse(strpos($confirmationNumber, '0'));
         $this->assertFalse(strpos($confirmationNumber, 'O'));
-    }    
+    }
 
     /** @test */
     function confirmation_numbers_must_be_unique()
@@ -56,7 +56,7 @@ class RandomOrderConfirmationNumberGeneratorTest extends TestCase
         $confirmationNumbers = array_map(function ($i) use ($generator) {
             return $generator->generate();
         }, range(1, 100));
-        
+
         $this->assertCount(100, array_unique($confirmationNumbers));
-    }    
+    }
 }

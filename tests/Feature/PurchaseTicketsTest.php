@@ -1,14 +1,16 @@
 <?php
 
-use App\Billing\FakePaymentGateway;
-use App\Billing\PaymentGateway;
+namespace Tests\Feature;
+
 use App\Concert;
-use App\Facades\OrderConfirmationNumber;
+use Tests\TestCase;
 use App\Facades\TicketCode;
-use App\OrderConfirmationNumberGenerator;
+use App\Billing\PaymentGateway;
+use App\Billing\FakePaymentGateway;
+use App\Mail\OrderConfirmationEmail;
+use Illuminate\Support\Facades\Mail;
+use App\Facades\OrderConfirmationNumber;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 class PurchaseTicketsTest extends TestCase
 {
@@ -19,6 +21,7 @@ class PurchaseTicketsTest extends TestCase
         parent::setUp();
         $this->paymentGateway = new FakePaymentGateway;
         $this->app->instance(PaymentGateway::class, $this->paymentGateway);
+        Mail::fake();
     }
 
     private function orderTickets($concert, $params)
@@ -55,7 +58,7 @@ class PurchaseTicketsTest extends TestCase
         $this->disableExceptionHandling();
 
         OrderConfirmationNumber::shouldReceive('generate')->andReturn('ORDERCONFIRMATION1234');
-        TicketCode::shouldReceive('generateFor')->andReturn('TICKETCODE1','TICKETCODE2','TICKETCODE3');
+        TicketCode::shouldReceive('generateFor')->andReturn('TICKETCODE1', 'TICKETCODE2', 'TICKETCODE3');
 
         $concert = factory(Concert::class)->states('published')->create(['ticket_price' => 3250])->addTickets(3);
 
@@ -80,7 +83,14 @@ class PurchaseTicketsTest extends TestCase
 
         $this->assertEquals(9750, $this->paymentGateway->totalCharges());
         $this->assertTrue($concert->hasOrderFor('john@example.com'));
-        $this->assertEquals(3, $concert->ordersFor('john@example.com')->first()->ticketQuantity());
+
+        $order = $concert->ordersFor('john@example.com')->first();
+        $this->assertEquals(3, $order->ticketQuantity());
+
+        Mail::assertSent(OrderConfirmationEmail::class, function ($mail) use ($order) {
+            return $mail->hasTo('john@example.com')
+                && $mail->order->id == $order->id;
+        });
     }
 
     /** @test */
